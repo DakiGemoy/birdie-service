@@ -1,0 +1,11 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: birdie
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dbbirdie
+    username: postgres
+    password: userpostgre
