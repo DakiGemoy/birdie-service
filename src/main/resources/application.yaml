@@ -1,5 +1,7 @@
 server:
   port: 8090
+  servlet:
+    context-path: /birdie-service
 
 spring:
   application:
@@ -9,3 +11,15 @@ spring:
     url: jdbc:postgresql://localhost:5432/dbbirdie
     username: postgres
     password: userpostgre
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://localhost:8081/realms/demo
+
+birdie:
+  service:
+    jwt:
+      secret: dGhpc19pc19zZWNyZXRfa2V5X2Zvcl92ZXJzaW9uX3YxLjAuMA==
+      expired: 600000

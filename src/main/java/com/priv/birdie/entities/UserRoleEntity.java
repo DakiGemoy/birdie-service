@@ -11,10 +11,10 @@ import lombok.EqualsAndHashCode;
 public class UserRoleEntity extends BaseAuditEntity {
     @Id
     private Long id;
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserInfoEntity user;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    private AccountUserEntity accountUser;
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private RoleEntity role;
     private Boolean isActive;

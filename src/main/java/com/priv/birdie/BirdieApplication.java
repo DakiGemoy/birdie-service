@@ -7,7 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BirdieApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BirdieApplication.class, args);
+		System.setProperty("log.name","birdie-service");
+        SpringApplication.run(BirdieApplication.class, args);
 	}
 
 }
