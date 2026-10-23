@@ -14,6 +14,8 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.priv.birdie.model.Constant.RespCode.*;
+
 @RestControllerAdvice
 public class GeneralExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
@@ -21,7 +23,7 @@ public class GeneralExceptionHandler {
         return ResponseEntity.badRequest()
                 .body(
                         BaseResponse.<String>builder()
-                                .code("04")
+                                .code(BAD_REQUEST)
                                 .message("Bad Request")
                                 .data(ex.getMessage())
                                 .build()
@@ -34,16 +36,16 @@ public class GeneralExceptionHandler {
 
         if (ex instanceof MethodArgumentNotValidException mex){
             mex.getBindingResult().getFieldErrors()
-                    .forEach(e -> errors.put(e.getField(), "Tidak boleh kosong"));
+                    .forEach(e -> errors.put(e.getField(), "Can't be empty"));
         } else {
             ((BindException) ex).getBindingResult().getFieldErrors()
-                    .forEach(e -> errors.put(e.getField(), "Tidak boleh kosong"));
+                    .forEach(e -> errors.put(e.getField(), "Can't be empty"));
         }
 
         return ResponseEntity.badRequest()
                 .body(
                         BaseResponse.<Map<String,String>>builder()
-                                .message("Bad Request")
+                                .message(BAD_REQUEST)
                                 .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                                 .data(errors)
                                 .build()
@@ -55,7 +57,7 @@ public class GeneralExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(
                         BaseResponse.<Map<String,String>>builder()
-                                .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                .code(BAD_REQUEST)
                                 .message("Missing required parameter")
                                 .data(
                                         Map.of("name",ex.getParameterName())
@@ -68,7 +70,7 @@ public class GeneralExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(
                         BaseResponse.<Map<String,String>>builder()
-                                .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                .code(BAD_REQUEST)
                                 .message("Missing required parameter")
                                 .data(
                                         Map.of("name",ex.getRequestPartName())
@@ -96,7 +98,7 @@ public class GeneralExceptionHandler {
         return ResponseEntity.status(500)
                 .body(
                         BaseResponse.<Void>builder()
-                                .code(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()))
+                                .code(INTERNAL_ERROR)
                                 .message("Internal Server Error")
                                 .build()
                 );
@@ -107,8 +109,8 @@ public class GeneralExceptionHandler {
         return ResponseEntity.status(500)
                 .body(
                         BaseResponse.<Void>builder()
-                                .code(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()))
-                                .message("Hasil pencarian data tidak sesuai")
+                                .code(ERROR_DATABASE)
+                                .message("Error data result set")
                                 .build()
                 );
     }

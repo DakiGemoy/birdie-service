@@ -15,5 +15,6 @@ public class AppProperties {
     public static class Jwt {
         private String secret;
         private Long expired;
+        private Long refreshExpired;
     }
 }

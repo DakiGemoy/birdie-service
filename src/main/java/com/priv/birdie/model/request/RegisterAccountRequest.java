@@ -2,12 +2,14 @@ package com.priv.birdie.model.request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record RegistAccountRequest(
+public record RegisterAccountRequest(
+        String displayName,
         @NotBlank
         String email,
         @NotBlank
         String username,
         @NotBlank
-        String password
+        String password,
+        Boolean needTwoAuth
 ){
 }

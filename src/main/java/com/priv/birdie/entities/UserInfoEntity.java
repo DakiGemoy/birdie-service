@@ -14,7 +14,7 @@ public class UserInfoEntity {
     private Long Id;
     @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
     @OneToOne(fetch = FetchType.LAZY)
-    private AccountUserEntity user;
+    private AccountUserEntity account;
     private String displayName;
     private String biography;
     private LocalDateTime updatedAt;

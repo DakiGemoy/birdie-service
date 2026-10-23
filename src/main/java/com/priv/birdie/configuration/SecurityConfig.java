@@ -34,7 +34,11 @@ public class SecurityConfig {
                 .cors(cors->{})
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/register/client",
+                                "/api/auth/refresh-token"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exc->exc
                         .accessDeniedHandler(accessDeniedHandler)

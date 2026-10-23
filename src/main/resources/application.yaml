@@ -23,3 +23,4 @@ birdie:
     jwt:
       secret: dGhpc19pc19zZWNyZXRfa2V5X2Zvcl92ZXJzaW9uX3YxLjAuMA==
       expired: 600000
+      refresh-expired: 604800000
