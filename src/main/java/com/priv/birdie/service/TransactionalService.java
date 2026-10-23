@@ -1,7 +1,9 @@
 package com.priv.birdie.service;
 
+import com.priv.birdie.entities.AccountUserEntity;
 import com.priv.birdie.entities.RefreshTokenEntity;
 import com.priv.birdie.repository.AccountRepository;
+import com.priv.birdie.repository.LoginFailedRepository;
 import com.priv.birdie.repository.RefreshTokenRepository;
 import com.priv.birdie.repository.UserRoleRepository;
 import jakarta.transaction.Transactional;
@@ -19,6 +21,7 @@ public class TransactionalService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRoleRepository userRoleRepository;
     private final AccountRepository accountRepository;
+    private final LoginFailedRepository loginFailedRepository;
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void executeIndicateStolenCred(Long accountId){
@@ -39,4 +42,10 @@ public class TransactionalService {
         log.info("Success update token to revoked");
     }
 
+    @Transactional
+    public void deleteFailedLogin(String username){
+        AccountUserEntity account = accountRepository.findByUsernameAndIsActiveTrue(username).orElseThrow();
+        int historyFail = loginFailedRepository.deleteByAccount_Id(account.getId());
+        log.info("Success delete history failed : {} record",historyFail);
+    }
 }

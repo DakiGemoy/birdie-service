@@ -11,7 +11,7 @@ import com.priv.birdie.repository.*;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -24,13 +24,14 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.priv.birdie.model.Constant.RespCode.*;
 import static com.priv.birdie.model.Constant.Role.USER;
 
-@Log4j2
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -46,6 +47,7 @@ public class AuthenticationService {
     private final UserRoleRepository userRoleRepository;
     private final UserInfoRepository userInfoRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final LoginFailedRepository loginFailedRepository;
 
     @Transactional
     public void registerAccountClient(RegisterAccountRequest request){
@@ -89,6 +91,7 @@ public class AuthenticationService {
 
             String token = jwtUtil.generateToken(request.username(),roles);
             Claims claims = jwtUtil.getClaimsFromToken(token);
+            transactionalService.deleteFailedLogin(request.username());
 
             return LoginResponse.builder()
                     .accessToken(token)
@@ -98,6 +101,7 @@ public class AuthenticationService {
                                     .toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
                     ).build();
         } catch (UsernameNotFoundException | BadCredentialsException e){
+            handleFailedPasswordLogin(request.username());
             throw new ProcessException(HttpStatus.BAD_REQUEST,BAD_CREDENTIAL,"Invalid username / password");
         } catch (LockedException e){
             throw new ProcessException(HttpStatus.UNAUTHORIZED,BAD_CREDENTIAL,"Account locked");
@@ -108,8 +112,35 @@ public class AuthenticationService {
         }
     }
 
-    public void logout(){
-//        kill refresh token here
+    private void handleFailedPasswordLogin(String username){
+        Optional<AccountUserEntity> account = accountRepository.findByUsernameAndIsActiveTrue(username);
+
+        if (account.isEmpty())
+            return;
+
+        LoginFailedEntity failed = new LoginFailedEntity();
+        failed.setAccount(account.get());
+        failed.setCreatedAt(LocalDateTime.now());
+        loginFailedRepository.save(failed);
+    }
+
+    public void destroyRefreshToken(String refreshToken){
+        if (refreshToken==null || refreshToken.isBlank()){
+            log.warn("Refresh token is not provided");
+            return;
+        }
+
+        RefreshTokenEntity rtEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(
+                ()->new ProcessException(HttpStatus.UNAUTHORIZED,BAD_CREDENTIAL,"Token unknown"));
+
+        if (rtEntity.getRevoked()) {
+            log.warn("Refresh token already revoked");
+            return;
+        }
+
+        rtEntity.setRevoked(true);
+        rtEntity.setUpdatedAt(LocalDateTime.now());
+        refreshTokenRepository.save(rtEntity);
     }
 
     private String buildAndRegisterRefreshToken(String username){

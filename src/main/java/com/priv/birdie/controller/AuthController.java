@@ -6,12 +6,10 @@ import com.priv.birdie.model.request.RegisterAccountRequest;
 import com.priv.birdie.model.response.BaseResponse;
 import com.priv.birdie.model.response.LoginResponse;
 import com.priv.birdie.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.priv.birdie.model.Constant.RespCode.SUCCESS;
 
@@ -46,6 +44,16 @@ public class AuthController {
                 .code(SUCCESS)
                 .message("Success refresh token")
                 .data(authenticationService.extendAccessToken(request.refreshToken()))
+                .build();
+    }
+
+    @GetMapping("/logout")
+    public BaseResponse<Void> logout(HttpServletRequest servletRequest){
+        String refreshToken = servletRequest.getHeader("refresh");
+        authenticationService.destroyRefreshToken(refreshToken);
+        return BaseResponse.<Void>builder()
+                .code("00")
+                .message("Success logout")
                 .build();
     }
 }

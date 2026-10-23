@@ -3,6 +3,7 @@ package com.priv.birdie.configuration;
 import com.priv.birdie.entities.AccountUserEntity;
 import com.priv.birdie.entities.UserRoleEntity;
 import com.priv.birdie.repository.AccountRepository;
+import com.priv.birdie.repository.LoginFailedRepository;
 import com.priv.birdie.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.AuthenticationException;
@@ -21,12 +22,14 @@ public class CustomUserDetailService implements UserDetailsService {
 
     private final AccountRepository accountRepository;
     private final UserRoleRepository userRoleRepository;
+    private final LoginFailedRepository loginFailedRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws AuthenticationException {
         AccountUserEntity account = accountRepository.findByUsername(username).orElseThrow(
                 ()->new UsernameNotFoundException("Username not found"));
 
+        boolean notLocked = loginFailedRepository.countByAccount_Id(account.getId())<5;
 //
 //        if (account.getTwoAuthActive()){ //do something next time
 //        }
@@ -40,7 +43,7 @@ public class CustomUserDetailService implements UserDetailsService {
                 account.getIsActive()!=null && account.getIsActive(),
                 true,
                 true,
-                true, // will create bloked-locked mechanism
+                notLocked,
                 grantedAuthorities
         );
     }
